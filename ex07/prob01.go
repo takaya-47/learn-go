@@ -2,9 +2,15 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"os"
 	"slices"
 )
+
+type Ranker interface {
+	Ranking() []string
+}
 
 type Team struct {
 	Name    string
@@ -62,6 +68,17 @@ func (l *League) Ranking() []string {
 	return names
 }
 
+func RankPrinter(r Ranker, w io.Writer) {
+	ranking := r.Ranking()
+	for _, team := range ranking {
+		fmt.Fprintln(w, team)
+
+		// 以下でも同じ結果。
+		// io.WriteString(w, team)
+		// io.WriteString(w, "\n")
+	}
+}
+
 func main() {
 	l := League{
 		Name: "Big League",
@@ -97,4 +114,6 @@ func main() {
 	l.MatchResult("France", 95, "India", 80)
 	results := l.Ranking()
 	fmt.Println(results)
+
+	RankPrinter(&l, os.Stdout)
 }
