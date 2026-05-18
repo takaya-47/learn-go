@@ -2,13 +2,13 @@ package main
 
 import "fmt"
 
-type doubler interface {
+type ValidTypes interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 |
 		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 |
 		~float32 | ~float64
 }
 
-func double[T doubler](d T) T {
+func double[T ValidTypes](d T) T {
 	return 2 * d
 }
 
