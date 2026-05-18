@@ -1,19 +1,19 @@
-package main
+// package main
 
-import "fmt"
+// import "fmt"
 
-type ValidTypes interface {
-	~int | ~int8 | ~int16 | ~int32 | ~int64 |
-		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 |
-		~float32 | ~float64
-}
+// type ValidTypes interface {
+// 	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+// 		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 |
+// 		~float32 | ~float64
+// }
 
-func double[T ValidTypes](d T) T {
-	return 2 * d
-}
+// func double[T ValidTypes](d T) T {
+// 	return 2 * d
+// }
 
-func main() {
-	fmt.Println((double(3)))
-	fmt.Println((double(-3)))
-	fmt.Println((double(3.14)))
-}
+// func main() {
+// 	fmt.Println((double(3)))
+// 	fmt.Println((double(-3)))
+// 	fmt.Println((double(3.14)))
+// }
