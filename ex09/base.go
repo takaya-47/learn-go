@@ -8,8 +8,17 @@ import (
 	"strings"
 )
 
-// センチネルエラー（パッケージレベルの変数）
+// センチネルエラー（先頭が「Err」で始まるエラー）
 var ErrInvalidId = errors.New("invalid ID")
+
+type ErrEmptyField struct {
+	EmptyField   string
+	EmployeeName string
+}
+
+func (e ErrEmptyField) Error() string {
+	return fmt.Sprintf("%s is empty for employee %s", e.EmptyField, e.EmployeeName)
+}
 
 func main() {
 	d := json.NewDecoder(strings.NewReader(data))
@@ -23,9 +32,15 @@ func main() {
 			continue
 		}
 		err = ValidateEmployee(emp)
+		var emptyFieldError ErrEmptyField
 		if err != nil {
 			if errors.Is(err, ErrInvalidId) {
 				fmt.Printf("record %d: %+v error: invalid ID: %s\n", count, emp, emp.ID)
+				continue
+			}
+
+			if errors.As(err, &emptyFieldError) {
+				fmt.Printf("record %d: %+v error: empty field %s\n", count, emp, emptyFieldError.EmptyField)
 				continue
 			}
 
@@ -94,19 +109,19 @@ var (
 
 func ValidateEmployee(e Employee) error {
 	if len(e.ID) == 0 {
-		return errors.New("missing ID")
+		return ErrEmptyField{EmptyField: "id", EmployeeName: e.FirstName + " " + e.LastName}
 	}
 	if !validID.MatchString(e.ID) {
 		return ErrInvalidId
 	}
 	if len(e.FirstName) == 0 {
-		return errors.New("missing FirstName")
+		return ErrEmptyField{EmptyField: "first_name", EmployeeName: e.FirstName + " " + e.LastName}
 	}
 	if len(e.LastName) == 0 {
-		return errors.New("missing LastName")
+		return ErrEmptyField{EmptyField: "last_name", EmployeeName: e.FirstName + " " + e.LastName}
 	}
 	if len(e.Title) == 0 {
-		return errors.New("missing Title")
+		return ErrEmptyField{EmptyField: "title", EmployeeName: e.FirstName + " " + e.LastName}
 	}
 	return nil
 }
