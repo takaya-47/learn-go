@@ -34,12 +34,12 @@ func main() {
 		err = ValidateEmployee(emp)
 		var emptyFieldError ErrEmptyField
 		if err != nil {
-			if errors.Is(err, ErrInvalidId) {
+			if errors.Is(err, ErrInvalidId) { // 値と比較する場合はerrors.Isを使う
 				fmt.Printf("record %d: %+v error: invalid ID: %s\n", count, emp, emp.ID)
 				continue
 			}
 
-			if errors.As(err, &emptyFieldError) {
+			if errors.As(err, &emptyFieldError) { // 型と比較する場合はerrors.Asを使う
 				fmt.Printf("record %d: %+v error: empty field %s\n", count, emp, emptyFieldError.EmptyField)
 				// fmt.Println(err.Error())
 				continue
