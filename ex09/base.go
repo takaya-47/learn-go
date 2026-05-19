@@ -40,7 +40,8 @@ func main() {
 			}
 
 			if errors.As(err, &emptyFieldError) {
-				fmt.Printf("record %d: %+v error: empty field %s\n", count, emp, emptyFieldError.EmptyField)
+				// fmt.Printf("record %d: %+v error: empty field %s\n", count, emp, emptyFieldError.EmptyField)
+				fmt.Println(err.Error())
 				continue
 			}
 
