@@ -8,16 +8,15 @@ import (
 	"strings"
 )
 
-// センチネルエラー（先頭が「Err」で始まるエラー）
+// センチネルエラー（事前に定義されたエラーで先頭はErr~で始めるのが慣習的）
 var ErrInvalidId = errors.New("invalid ID")
 
 type ErrEmptyField struct {
-	EmptyField   string
-	EmployeeName string
+	EmptyField string
 }
 
 func (e ErrEmptyField) Error() string {
-	return fmt.Sprintf("%s is empty for employee %s", e.EmptyField, e.EmployeeName)
+	return fmt.Sprintf("%v is empty", e.EmptyField)
 }
 
 func main() {
@@ -32,22 +31,24 @@ func main() {
 			continue
 		}
 		err = ValidateEmployee(emp)
-		var emptyFieldError ErrEmptyField
 		if err != nil {
-			if errors.Is(err, ErrInvalidId) { // 値と比較する場合はerrors.Isを使う
-				fmt.Printf("record %d: %+v error: invalid ID: %s\n", count, emp, emp.ID)
+			switch err := err.(type) { // 型switch
+			case interface{ Unwrap() []error }: // /opt/homebrew/Cellar/go/1.26.3/libexec/src/errors/join.go : Unwrap() []error
+				// ValidateEmployee()でerrors.Join()で返却されている場合
+				allErrs := err.Unwrap()
+				var messages []string
+				for _, e := range allErrs {
+					messages = append(messages, e.Error())
+				}
+				fmt.Printf("record %d: %+v errors: %s\n", count, emp, strings.Join(messages, ", "))
+				continue
+			default:
+				// ValidateEmployee()で単一のエラーが返却されている場合
+				fmt.Printf("record %d: %+v error: %v\n", count, emp, err)
 				continue
 			}
-
-			if errors.As(err, &emptyFieldError) { // 型と比較する場合はerrors.Asを使う
-				fmt.Printf("record %d: %+v error: empty field %s\n", count, emp, emptyFieldError.EmptyField)
-				// fmt.Println(err.Error())
-				continue
-			}
-
-			fmt.Printf("record %d: %+v error: %v\n", count, emp, err)
-			continue
 		}
+
 		fmt.Printf("record %d: %+v\n", count, emp)
 	}
 }
@@ -109,20 +110,29 @@ var (
 )
 
 func ValidateEmployee(e Employee) error {
+	var errs []error
 	if len(e.ID) == 0 {
-		return ErrEmptyField{EmptyField: "id", EmployeeName: e.FirstName + " " + e.LastName}
+		errs = append(errs, ErrEmptyField{EmptyField: "id"})
 	}
 	if !validID.MatchString(e.ID) {
-		return ErrInvalidId
+		errs = append(errs, ErrInvalidId)
 	}
 	if len(e.FirstName) == 0 {
-		return ErrEmptyField{EmptyField: "first_name", EmployeeName: e.FirstName + " " + e.LastName}
+		errs = append(errs, ErrEmptyField{EmptyField: "first_name"})
 	}
 	if len(e.LastName) == 0 {
-		return ErrEmptyField{EmptyField: "last_name", EmployeeName: e.FirstName + " " + e.LastName}
+		errs = append(errs, ErrEmptyField{EmptyField: "last_name"})
 	}
 	if len(e.Title) == 0 {
-		return ErrEmptyField{EmptyField: "title", EmployeeName: e.FirstName + " " + e.LastName}
+		errs = append(errs, ErrEmptyField{EmptyField: "title"})
 	}
-	return nil
+
+	switch len(errs) {
+	case 0:
+		return nil
+	case 1:
+		return errs[0]
+	default:
+		return errors.Join(errs...)
+	}
 }
