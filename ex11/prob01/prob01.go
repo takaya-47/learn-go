@@ -8,16 +8,16 @@ import (
 	"strings"
 )
 
-//go:embed chinese_rights.txt
+//go:embed udhr/text/chinese_rights.txt
 var chineseRights string
 
-//go:embed english_rights.txt
+//go:embed udhr/text/english_rights.txt
 var englishRights string
 
-//go:embed japanese_rights.txt
+//go:embed udhr/text/japanese_rights.txt
 var japaneseRights string
 
-//go:embed korean_rights.txt
+//go:embed udhr/text/korean_rights.txt
 var koreanRights string
 
 func main() {
