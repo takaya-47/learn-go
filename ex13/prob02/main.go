@@ -29,7 +29,7 @@ func main() {
 func newServeMux() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.Handle("/", clientIpLogger(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/", withClientIPLogging(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 			return
@@ -46,7 +46,7 @@ func newServeMux() *http.ServeMux {
 	return mux
 }
 
-func clientIpLogger(next http.Handler) http.Handler {
+func withClientIPLogging(next http.Handler) http.Handler {
 	logger := newLogger()
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
