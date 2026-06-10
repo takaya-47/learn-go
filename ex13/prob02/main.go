@@ -50,7 +50,11 @@ func withClientIPLogging(next http.Handler) http.Handler {
 	logger := newLogger()
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.Info("Received request", slog.String("client_ip", clientIP(r)))
+		logger.Info("Received request",
+			slog.String("client_ip", clientIP(r)),
+			slog.String("method", r.Method),
+			slog.String("path", r.URL.Path),
+		)
 
 		next.ServeHTTP(w, r)
 	})
@@ -67,12 +71,16 @@ func clientIP(r *http.Request) string {
 		first, _, _ := strings.Cut(xff, ",")
 		return strings.TrimSpace(first)
 	}
+
 	if xrip := r.Header.Get("X-Real-IP"); xrip != "" {
 		return strings.TrimSpace(xrip)
 	}
+
 	// プロキシが無い場合は RemoteAddr（IP:port 形式）から IP 部分だけ取り出す。
 	if ip, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
 		return ip
 	}
+
+	// フォールバック用
 	return r.RemoteAddr
 }
