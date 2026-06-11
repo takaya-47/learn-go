@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"log/slog"
 	"net"
@@ -43,8 +44,20 @@ func newServeMux() *http.ServeMux {
 		switch r.Header.Get("Accept") {
 		case "application/json":
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
-			// TODO: "2026-06-10T09:54:30.076004+09:00"のような文字列をfullDateTime構造体を使ってJSONとしてレスポンスする
-
+			now := time.Now()
+			err := json.NewEncoder(w).Encode(fullDateTime{
+				dayOfWeek:  now.Weekday().String(),
+				dayOfMonth: now.Day(),
+				month:      now.Month().String(),
+				year:       now.Year(),
+				hour:       now.Hour(),
+				minute:     now.Minute(),
+				second:     now.Second(),
+			})
+			if err != nil {
+				http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
+				return
+			}
 		case "text/plain":
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 			w.Write([]byte(time.Now().Format(time.RFC3339)))
