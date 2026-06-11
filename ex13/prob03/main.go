@@ -22,7 +22,6 @@ type fullDateTime struct {
 }
 
 func main() {
-
 	s := http.Server{
 		Addr:         ":8080",
 		Handler:      newServeMux(),
@@ -41,10 +40,10 @@ func newServeMux() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.Handle("GET /", withClientIPLogging(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		now := time.Now()
 		switch r.Header.Get("Accept") {
 		case "application/json":
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
-			now := time.Now()
 			err := json.NewEncoder(w).Encode(fullDateTime{
 				DayOfWeek:  now.Weekday().String(),
 				DayOfMonth: now.Day(),
@@ -60,9 +59,10 @@ func newServeMux() *http.ServeMux {
 			}
 		case "text/plain":
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			w.Write([]byte(time.Now().Format(time.RFC3339) + "\n"))
+			w.Write([]byte(now.Format(time.RFC3339) + "\n"))
 		default:
-			w.Write([]byte(time.Now().Format(time.RFC3339) + "\n"))
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			w.Write([]byte(now.Format(time.RFC3339) + "\n"))
 		}
 	})))
 
