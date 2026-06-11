@@ -60,9 +60,9 @@ func newServeMux() *http.ServeMux {
 			}
 		case "text/plain":
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			w.Write([]byte(time.Now().Format(time.RFC3339)))
+			w.Write([]byte(time.Now().Format(time.RFC3339) + "\n"))
 		default:
-			w.Write([]byte(time.Now().Format(time.RFC3339)))
+			w.Write([]byte(time.Now().Format(time.RFC3339) + "\n"))
 		}
 	})))
 
