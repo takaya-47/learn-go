@@ -12,13 +12,13 @@ import (
 )
 
 type fullDateTime struct {
-	dayOfWeek  string `json:"day_of_week"`
-	dayOfMonth int    `json:"day_of_month"`
-	month      string `json:"month"`
-	year       int    `json:"year"`
-	hour       int    `json:"hour"`
-	minute     int    `json:"minute"`
-	second     int    `json:"second"`
+	DayOfWeek  string `json:"day_of_week"`
+	DayOfMonth int    `json:"day_of_month"`
+	Month      string `json:"month"`
+	Year       int    `json:"year"`
+	Hour       int    `json:"hour"`
+	Minute     int    `json:"minute"`
+	Second     int    `json:"second"`
 }
 
 func main() {
@@ -46,13 +46,13 @@ func newServeMux() *http.ServeMux {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			now := time.Now()
 			err := json.NewEncoder(w).Encode(fullDateTime{
-				dayOfWeek:  now.Weekday().String(),
-				dayOfMonth: now.Day(),
-				month:      now.Month().String(),
-				year:       now.Year(),
-				hour:       now.Hour(),
-				minute:     now.Minute(),
-				second:     now.Second(),
+				DayOfWeek:  now.Weekday().String(),
+				DayOfMonth: now.Day(),
+				Month:      now.Month().String(),
+				Year:       now.Year(),
+				Hour:       now.Hour(),
+				Minute:     now.Minute(),
+				Second:     now.Second(),
 			})
 			if err != nil {
 				http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
