@@ -41,8 +41,7 @@ func newServeMux() *http.ServeMux {
 
 	mux.Handle("GET /", withClientIPLogging(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
-		switch r.Header.Get("Accept") {
-		case "application/json":
+		if r.Header.Get("Accept") == "application/json" {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			err := json.NewEncoder(w).Encode(fullDateTime{
 				DayOfWeek:  now.Weekday().String(),
@@ -55,12 +54,8 @@ func newServeMux() *http.ServeMux {
 			})
 			if err != nil {
 				http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
-				return
 			}
-		case "text/plain":
-			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			w.Write([]byte(now.Format(time.RFC3339) + "\n"))
-		default:
+		} else {
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 			w.Write([]byte(now.Format(time.RFC3339) + "\n"))
 		}
