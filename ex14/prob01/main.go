@@ -26,25 +26,26 @@ func main() {
 func newServeMux() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	timeoutMiddleware := timeoutMiddleware(100) // タイムアウト値 = 100ミリ秒（0.1秒）
+	timeout := timeoutMiddleware(100) // タイムアウト値 = 100ミリ秒（0.1秒）
 
-	mux.Handle("GET /work", timeoutMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		msg, err := doRandomWork(ctx) // コンテキストを橋渡し
-		if err != nil {
-			if errors.Is(err, context.DeadlineExceeded) {
-				w.WriteHeader(http.StatusGatewayTimeout)
-			} else {
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-		} else {
-			w.WriteHeader(http.StatusOK)
-		}
-
-		w.Write([]byte(msg + "\n"))
-	})))
+	mux.Handle("GET /work", timeout(http.HandlerFunc(handleWork)))
 
 	return mux
+}
+
+func handleWork(w http.ResponseWriter, r *http.Request) {
+	msg, err := doRandomWork(r.Context()) // コンテキストを引き継ぎ、橋渡しする
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			w.WriteHeader(http.StatusGatewayTimeout)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+
+	w.Write([]byte(msg + "\n"))
 }
 
 func timeoutMiddleware(ms int) func(h http.Handler) http.Handler {
