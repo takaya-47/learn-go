@@ -51,8 +51,7 @@ func handleWork(w http.ResponseWriter, r *http.Request) {
 func timeoutMiddleware(ms int) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := r.Context()
-			ctx, cancelFunc := context.WithTimeout(ctx, time.Duration(ms)*time.Millisecond)
+			ctx, cancelFunc := context.WithTimeout(r.Context(), time.Duration(ms)*time.Millisecond)
 			defer cancelFunc()
 			r = r.WithContext(ctx)
 
