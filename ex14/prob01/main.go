@@ -28,7 +28,7 @@ func newServeMux() *http.ServeMux {
 
 	timeoutMiddleware := timeoutMiddleware(100) // タイムアウト値 = 100ミリ秒（0.1秒）
 
-	mux.Handle("GET /", timeoutMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("GET /work", timeoutMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		msg, err := doRandomWork(ctx) // コンテキストを橋渡し
 		if err != nil {
