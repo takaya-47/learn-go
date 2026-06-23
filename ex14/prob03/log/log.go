@@ -2,6 +2,7 @@ package log
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 )
 
@@ -49,4 +50,18 @@ func Middleware(h http.Handler) http.Handler {
 
 		h.ServeHTTP(w, r)
 	})
+}
+
+func Log(ctx context.Context, level Level, message string) {
+	inLevel, ok := LogLevelFromContext(ctx)
+	if !ok {
+		return
+	}
+
+	if level == Debug && inLevel == Debug {
+		fmt.Println(message)
+	}
+	if level == Info && (inLevel == Debug || inLevel == Info) {
+		fmt.Println(message)
+	}
 }
