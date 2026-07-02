@@ -1,5 +1,7 @@
 package processor_test
 
+// TODO: 0で割った時の異常系を追加し、プロダクトコードも修正
+
 import (
 	"strconv"
 	"takaya-47/learn-go/ex15/processor"
@@ -18,6 +20,7 @@ func TestDataProcessor(t *testing.T) {
 		{"CALC_2", "-", 5, 3, 2},
 		{"CALC_3", "*", 4, 6, 24},
 		{"CALC_4", "/", 8, 2, 4},
+		{"CALC_5", "&", 10, 15, 25}, // 演算子が不正
 	}
 
 	for _, d := range data {
@@ -36,12 +39,22 @@ func TestDataProcessor(t *testing.T) {
 			close(in)
 
 			// Assert
-			result := <-out
-			if result.Id != d.name {
-				t.Errorf("Expected %s, got %s", d.name, result.Id)
+			result, ok := <-out
+			// 正常系
+			if ok {
+				if result.Id != d.name {
+					t.Errorf("Expected %s, got %s", d.name, result.Id)
+				}
+				if result.Value != d.expected {
+					t.Errorf("Expected %d, got %d", d.expected, result.Value)
+				}
+
+				return
 			}
-			if result.Value != d.expected {
-				t.Errorf("Expected %d, got %d", d.expected, result.Value)
+
+			// 以下、異常系の検証
+			if result.Id != "" && result.Value != 0 {
+				t.Errorf("Expected empty result, but got %v, %v", result.Id, result.Value)
 			}
 		})
 	}
