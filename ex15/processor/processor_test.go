@@ -1,7 +1,5 @@
 package processor_test
 
-// TODO: 0で割った時の異常系を追加し、プロダクトコードも修正
-
 import (
 	"strconv"
 	"takaya-47/learn-go/ex15/processor"
@@ -15,13 +13,14 @@ func TestDataProcessor(t *testing.T) {
 		val1     int
 		val2     int
 		expected int
+		wantErr  bool
 	}{
-		{"CALC_1", "+", 1, 2, 3},
-		{"CALC_2", "-", 5, 3, 2},
-		{"CALC_3", "*", 4, 6, 24},
-		{"CALC_4", "/", 8, 2, 4},
-		{"CALC_5", "&", 10, 15, 25}, // 異常系：演算子が不正
-		{"CALC_6", "/", 8, 0, 0},    // 異常系：0で割る場合
+		{"CALC_1", "+", 1, 2, 3, false},
+		{"CALC_2", "-", 5, 3, 2, false},
+		{"CALC_3", "*", 4, 6, 24, false},
+		{"CALC_4", "/", 8, 2, 4, false},
+		{"CALC_5", "&", 10, 15, 25, true}, // 演算子が不正
+		{"CALC_6", "/", 8, 0, 0, true},    // 0で割る場合
 	}
 
 	for _, d := range data {
@@ -41,21 +40,24 @@ func TestDataProcessor(t *testing.T) {
 
 			// Assert
 			result, ok := <-out
-			// 正常系
-			if ok {
-				if result.Id != d.name {
-					t.Errorf("Expected %s, got %s", d.name, result.Id)
+			if d.wantErr {
+				if ok {
+					t.Error("Expected no result, but got one")
 				}
-				if result.Value != d.expected {
-					t.Errorf("Expected %d, got %d", d.expected, result.Value)
-				}
-
 				return
 			}
 
-			// 以下、異常系の検証
-			if result.Id != "" && result.Value != 0 {
-				t.Errorf("Expected empty result, but got %v, %v", result.Id, result.Value)
+			if !d.wantErr {
+				if !ok {
+					t.Fatal("Expected result, but got none")
+				}
+
+				if result.Id != d.name {
+					t.Errorf("Expected name is %s, but got %s", d.name, result.Id)
+				}
+				if result.Value != d.expected {
+					t.Errorf("Expected value is %d, but got %d", d.expected, result.Value)
+				}
 			}
 		})
 	}
