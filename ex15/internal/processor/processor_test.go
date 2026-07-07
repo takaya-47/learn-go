@@ -3,7 +3,7 @@ package processor_test
 import (
 	"bytes"
 	"strconv"
-	"takaya-47/learn-go/ex15/processor"
+	"takaya-47/learn-go/ex15/internal/processor"
 	"testing"
 )
 
