@@ -1,6 +1,7 @@
 package processor_test
 
 import (
+	"bytes"
 	"strconv"
 	"takaya-47/learn-go/ex15/processor"
 	"testing"
@@ -60,5 +61,26 @@ func TestDataProcessor(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestWriteData(t *testing.T) {
+	// Arrange
+	result := processor.Result{
+		Id:    "CALC_1",
+		Value: 3,
+	}
+	in := make(chan processor.Result, 1)
+	var buf bytes.Buffer
+
+	// Act
+	in <- result
+	close(in)
+	processor.WriteData(in, &buf)
+
+	// Assert
+	expected := result.Id + ":" + strconv.Itoa(result.Value) + "\n"
+	if got := buf.String(); got != expected {
+		t.Errorf("Expected output is %s, but got %s", expected, got)
 	}
 }
