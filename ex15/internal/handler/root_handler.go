@@ -4,8 +4,27 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
+type counter struct {
+	l           sync.Mutex
+	numSent     int
+	numRejected int
+}
+
+func (c *counter) incrementSent() {
+	c.l.Lock()
+	defer c.l.Unlock()
+	c.numSent++
+}
+func (c *counter) incrementRejected() {
+	c.l.Lock()
+	defer c.l.Unlock()
+	c.numRejected++
+}
+
+// TODO: counter構造体のメソッドを使うように修正する
 func NewHandler(out chan []byte) http.Handler {
 	var numSent int
 	var numRejected int
