@@ -24,12 +24,10 @@ func (c *counter) incrementRejected() {
 	c.numRejected++
 }
 
-// TODO: counter構造体のメソッドを使うように修正する
 func NewHandler(out chan []byte) http.Handler {
-	var numSent int
-	var numRejected int
+	c := &counter{}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		numSent++
+		c.incrementSent()
 		// take in data
 		data, err := io.ReadAll(r.Body)
 		defer r.Body.Close()
@@ -44,12 +42,12 @@ func NewHandler(out chan []byte) http.Handler {
 			// success!
 		default:
 			// if the channel is backed up, return an error
-			numRejected++
+			c.incrementRejected()
 			w.WriteHeader(http.StatusServiceUnavailable)
-			w.Write([]byte("Too Busy: " + strconv.Itoa(numRejected)))
+			w.Write([]byte("Too Busy: " + strconv.Itoa(c.numRejected)))
 			return
 		}
 		w.WriteHeader(http.StatusAccepted)
-		w.Write([]byte("OK: " + strconv.Itoa(numSent)))
+		w.Write([]byte("OK: " + strconv.Itoa(c.numSent)))
 	})
 }
