@@ -64,6 +64,61 @@ func TestDataProcessor(t *testing.T) {
 	}
 }
 
+func FuzzDataProcessor(f *testing.F) {
+	data := []struct {
+		name     string
+		operator string
+		val1     int
+		val2     int
+		expected int
+		wantErr  bool
+	}{
+		{"CALC_1", "+", 1, 2, 3, false},
+		{"CALC_2", "-", 5, 3, 2, false},
+		{"CALC_3", "*", 4, 6, 24, false},
+		{"CALC_4", "/", 8, 2, 4, false},
+	}
+	for _, d := range data {
+		f.Add(d.name, d.operator, d.val1, d.val2)
+	}
+
+	f.Fuzz(func(t *testing.T, name string, operator string, val1 int, val2 int) {
+		byteText := []byte(name + "\n" + operator + "\n" + strconv.Itoa(val1) + "\n" + strconv.Itoa(val2))
+		in := make(chan []byte, 1)
+		out := make(chan processor.Result, 1)
+
+		go processor.DataProcessor(in, out)
+		in <- byteText
+		close(in)
+
+		result, ok := <-out
+		if !ok {
+			t.Log("0 division or invalid operator, no result returned")
+			return
+		}
+
+		got := result.Value
+		switch operator {
+		case "+":
+			if want := val1 + val2; got != want {
+				t.Errorf("want %d, got %d", want, got)
+			}
+		case "-":
+			if want := val1 - val2; got != want {
+				t.Errorf("want %d, got %d", want, got)
+			}
+		case "*":
+			if want := val1 * val2; got != want {
+				t.Errorf("want %d, got %d", want, got)
+			}
+		case "/":
+			if want := val1 / val2; got != want {
+				t.Errorf("want %d, got %d", want, got)
+			}
+		}
+	})
+}
+
 func TestWriteData(t *testing.T) {
 	// Arrange
 	result := processor.Result{
